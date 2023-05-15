@@ -1,4 +1,4 @@
-name: Deploy-2
+name: Deploy-TestAll
 on:
   workflow_dispatch:
   schedule:
@@ -20,7 +20,7 @@ jobs:
       - name: Run Script
         run: |
           timeout 3600 python MicrosoftRewardsBot.py --accounts ${{ secrets.KEYS2 }} --headless --fast --discord ${{ secrets.webhook }} --privacy --wfd ${{ github.workflow }}
-          timeout 3600 python MicrosoftRewardsBot.py --accounts ${{ secrets.KEYS3 }} --headless --fast --privacy --wfd ${{ github.workflow }}
+          timeout 3600 python MicrosoftRewardsBot.py --accounts ${{ secrets.KEYS3 }} --headless --fast --discord ${{ secrets.webhook }} --privacy
       - name: Retry
         if: ${{ failure() }}
         run: timeout 3600 python MicrosoftRewardsBot.py --accounts ${{ secrets.KEYS2 }} --headless --fast --privacy --wfd ${{ github.workflow }}
