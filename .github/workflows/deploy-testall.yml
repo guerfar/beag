@@ -1,0 +1,27 @@
+|name: Deploy-TestAll1TO6
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 9 * * *' # every day at 6:00 am Argentina time (09:00 am UTC)
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3.4.0
+      - name: Set up Python
+        uses: actions/setup-python@v4.5.0
+        with:
+          python-version: '3.x'
+      - name: Install required packages
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y xvfb
+          pip install -r requirements.txt
+      - name: Run Script KEYS1 TO KEYS6
+        run: |
+          timeout 2700 python MicrosoftRewardsBot.py --accounts ${{ secrets.KEYS1 }} --headless --fast --discord ${{ secrets.webhook }} --privacy
+          timeout 2700 python MicrosoftRewardsBot.py --accounts ${{ secrets.KEYS2 }} --headless --fast --discord ${{ secrets.webhook }} --privacy
+          timeout 2700 python MicrosoftRewardsBot.py --accounts ${{ secrets.KEYS3 }} --headless --fast --discord ${{ secrets.webhook }} --privacy
+          timeout 2700 python MicrosoftRewardsBot.py --accounts ${{ secrets.KEYS4 }} --headless --fast --discord ${{ secrets.webhook }} --privacy
+          timeout 2700 python MicrosoftRewardsBot.py --accounts ${{ secrets.KEYS5 }} --headless --fast --discord ${{ secrets.webhook }} --privacy
+          timeout 2700 python MicrosoftRewardsBot.py --accounts ${{ secrets.KEYS6 }} --headless --fast --discord ${{ secrets.webhook }} --privacy
