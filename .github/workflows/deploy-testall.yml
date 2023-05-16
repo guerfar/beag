@@ -1,4 +1,4 @@
-|name: Deploy-TestAll1TO6
+name: Deploy-TestAll1TO6
 on:
   workflow_dispatch:
   schedule:
