@@ -22,10 +22,10 @@ jobs:
           pip install -r requirements.txt
       - name: Run Script KEYS2 TO KEYS6
         run: |
-          python MicrosoftRewardsBot.py --accounts ${{ secrets.KEYS6 }} --headless --fast --discord ${{ secrets.webhook }} --privacy &
-          python MicrosoftRewardsBot.py --accounts ${{ secrets.KEYS2 }} --headless --fast --discord ${{ secrets.webhook }} --privacy &
-          python MicrosoftRewardsBot.py --accounts ${{ secrets.KEYS3 }} --headless --fast --discord ${{ secrets.webhook }} --privacy &
-          python MicrosoftRewardsBot.py --accounts ${{ secrets.KEYS4 }} --headless --fast --discord ${{ secrets.webhook }} --privacy &
-          python MicrosoftRewardsBot.py --accounts ${{ secrets.KEYS5 }} --headless --fast --discord ${{ secrets.webhook }} --privacy &
+          python MicrosoftRewardsBot.py --accounts ${{ secrets.KEYS1 }} --headless --fast --discord ${{ secrets.webhook }} --privacy & sleep 3
+          python MicrosoftRewardsBot.py --accounts ${{ secrets.KEYS2 }} --headless --fast --discord ${{ secrets.webhook }} --privacy & sleep 3
+          python MicrosoftRewardsBot.py --accounts ${{ secrets.KEYS3 }} --headless --fast --discord ${{ secrets.webhook }} --privacy & sleep 3
+          python MicrosoftRewardsBot.py --accounts ${{ secrets.KEYS4 }} --headless --fast --discord ${{ secrets.webhook }} --privacy & sleep 3
+          python MicrosoftRewardsBot.py --accounts ${{ secrets.KEYS5 }} --headless --fast --discord ${{ secrets.webhook }} --privacy & sleep 3
           python MicrosoftRewardsBot.py --accounts ${{ secrets.KEYS6 }} --headless --fast --discord ${{ secrets.webhook }} --privacy 
           wait
