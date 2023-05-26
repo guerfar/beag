@@ -2,7 +2,7 @@ name: Deploy-TestAll1TO6
 on:
   workflow_dispatch:
   schedule:
-    - cron: '0 9 * * *' # every day at 6:00 am Argentina time (09:00 am UTC)
+    - cron: '0 9 * * *' # every day at 6:00 am Argentine time (09:00 am UTC)
 jobs:
   Run_Bot:
     runs-on: ubuntu-latest
