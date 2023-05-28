@@ -35,11 +35,12 @@ from selenium.webdriver.support.ui import WebDriverWait
 from webdriver_manager.chrome import ChromeDriverManager
 
 import urllib.parse
+from discord_webhook import DiscordWebhook
 
 # Define user-agents
 
-PC_USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/113.0.0.0 Safari/537.36 Edg/112.0.1722.71'
-MOBILE_USER_AGENT = 'Mozilla/5.0 (Linux; Android 10; HD1913) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/113.0.5672.76 Mobile Safari/537.36 EdgA/112.0.1722.59'
+PC_USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/113.0.0.0 Safari/537.36 Edg/113.0.1774.57'
+MOBILE_USER_AGENT = 'Mozilla/5.0 (Linux; Android 10; SM-G981B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/113.0.0.0 Mobile Safari/537.36 Edg/113.0.0.0'
 
 
 # Global variables
@@ -65,6 +66,7 @@ def browserSetup(isMobile: bool, user_agent: str = PC_USER_AGENT, proxy: str = N
     options.add_argument('lang=' + LANG.split("-")[0])
     options.add_argument('--disable-blink-features=AutomationControlled')
     prefs = {"profile.default_content_setting_values.geolocation": 2,
+            "profile.managed_default_content_settings.images": 2,
             "credentials_enable_service": False,
             "profile.password_manager_enabled": False,
             "webrtc.ip_handling_policy": "disable_non_proxied_udp",
@@ -181,7 +183,7 @@ def login(browser: WebDriver, email: str, pwd: str, isMobile: bool = False):
             time.sleep(2)
             browser.find_element(By.ID, 'iNext').click()
             time.sleep(5)
-        if browser.title == 'Minecraft account | Home' or isElementExists(browser, By.ID, 'navs_container'):
+        if browser.title == 'Microsoft account | Home' or isElementExists(browser, By.ID, 'navs_container'):
             prGreen('[LOGIN] Account already logged in !')
             RewardsLogin(browser)
             print('[LOGIN]', 'Ensuring login on Bing...')
@@ -297,8 +299,8 @@ def login(browser: WebDriver, email: str, pwd: str, isMobile: bool = False):
     except (NoSuchElementException, ElementNotInteractableException) as e:
         pass
     print('[LOGIN]', 'Logged-in !')
-     # Check Rewards
-    print('[LOGIN] Logging into Rewards...')
+     # Check Microsoft Rewards
+    print('[LOGIN] Logging into Microsoft Rewards...')
     RewardsLogin(browser)
     # Check Login
     print('[LOGIN]', 'Ensuring login on Bing...')
@@ -317,17 +319,17 @@ def RewardsLogin(browser: WebDriver):
     try:
         browser.find_element(By.ID, 'error').is_displayed()
         # Check wheter account suspended or not
-        if browser.find_element(By.XPATH, '//*[@id="error"]/h1').get_attribute('innerHTML') == ' Uh oh, it appears your Rewards account has been suspended.':
+        if browser.find_element(By.XPATH, '//*[@id="error"]/h1').get_attribute('innerHTML') == ' Uh oh, it appears your Microsoft Rewards account has been suspended.':
             LOGS[CURRENT_ACCOUNT]['Last check'] = 'Your account has been suspended'
             LOGS[CURRENT_ACCOUNT]["Today's points"] = 'N/A' 
             LOGS[CURRENT_ACCOUNT]["Points"] = 'N/A' 
             cleanLogs()
             updateLogs()
             FINISHED_ACCOUNTS.append(CURRENT_ACCOUNT)
-            raise Exception(prRed('[ERROR] Your Rewards Minecraft account has been suspended !'))
+            raise Exception(prRed('[ERROR] Your Microsoft Rewards account has been suspended !'))
         # Check whether Rewards is available in your region or not
-        elif browser.find_element(By.XPATH, '//*[@id="error"]/h1').get_attribute('innerHTML') == 'Rewards Minecraft is not available in this country or region.':
-            prRed('[ERROR] Rewards Minecraft is not available in this country or region !')
+        elif browser.find_element(By.XPATH, '//*[@id="error"]/h1').get_attribute('innerHTML') == 'Microsoft Rewards is not available in this country or region.':
+            prRed('[ERROR] Microsoft Rewards is not available in this country or region !')
             if sys.stdout.isatty():
                 input('[ERROR] Press any key to close...')
             os._exit()
@@ -935,7 +937,7 @@ def completePunchCards(browser: WebDriver):
             if punchCard['parentPromotion'] != None and punchCard['childPromotions'] != None and punchCard['parentPromotion']['complete'] == False and punchCard['parentPromotion']['pointProgressMax'] != 0:
                 url = punchCard['parentPromotion']['attributes']['destination']
                 if browser.current_url.startswith('https://rewards.'):
-                    path = url.replace('https://rewards.microsoft.com', '')
+                    path = url.replace('https://rewards.bing.com', '')
                     new_url = 'https://rewards.bing.com/dashboard/'
                     userCode = path[11:15]
                     dest = new_url + userCode + path.split(userCode)[1]
@@ -1085,7 +1087,7 @@ def completeMorePromotions(browser: WebDriver):
                     if promotion['pointProgressMax'] == 100 or promotion['pointProgressMax'] == 200:
                         completeMorePromotionSearch(browser, i)
             if promotion['complete'] == False and promotion['pointProgressMax'] == 100 and promotion['promotionType'] == "" \
-                and promotion['destinationUrl'] == "https://rewards.microsoft.com":
+                and promotion['destinationUrl'] == "https://rewards.bing.com":
                 completeMorePromotionSearch(browser, i)
         except:
             resetTabs(browser)
@@ -1142,7 +1144,7 @@ def validateTime(time: str):
 
 def argumentParser():
     '''getting args from command line'''
-    parser = ArgumentParser(description="Rewards Minecraft Farmer V2.1", 
+    parser = ArgumentParser(description="Microsoft Rewards Farmer V2.1", 
                             allow_abbrev=False, 
                             usage="You may use execute the program with the default config or use arguments to configure available options.")
     parser.add_argument('--everyday', 
@@ -1193,10 +1195,10 @@ def argumentParser():
                         action="store_true",
                         required=False)
     parser.add_argument('--discord',
-                        metavar='<WEBHOOK_URL>',
+                        metavar=('<API_TOKEN>'),
                         nargs="*",
-                        help='[Optional] This argument takes webhook url to send logs to Discord.',
-                        type=str,
+                        help='[Optional] Discord webhooks', 
+                        type=str, 
                         required=False)
     parser.add_argument('--wfd',
                         metavar=('<WF_NAME>'),
@@ -1303,70 +1305,33 @@ def createMessage():
     if ARGS.wfd:
         wfd_txt = f"{ARGS.wfd}"
 
-    message = f'📅 Daily report {today}  📃{wfd_txt}\n\n'
+    message = f'📅 Daily report {today}   📃{wfd_txt}\n\n'
     for index, value in enumerate(LOGS.items(), 1):
-        redeem_message = None
-        if value[1].get("Redeem goal title", None):
-            redeem_title = value[1].get("Redeem goal title", None)
-            redeem_price = value[1].get("Redeem goal price")
-            redeem_count = value[1]["Points"] // redeem_price
-            if redeem_count > 1:
-                redeem_message = f"🎁 Ready to redeem: {redeem_title} for {redeem_price} points ({redeem_count}x)\n\n"
-            else:
-                redeem_message = f"🎁 Ready to redeem: {redeem_title} for {redeem_price} points\n\n"
         if value[1]['Last check'] == str(date.today()):
             status = '✅ Farmed'
             new_points = value[1]["Today's points"]
-            total_earned += new_points
             total_points = value[1]["Points"]
-            message += f"{index}. {value[0]}\n📝 Status: {status}\n⭐️ Earned points: {new_points}\n🏅 Total points: {total_points}\n"
-            if redeem_message:
-                message += redeem_message
-            else:
-                message += "\n"
+            message += f"{index}. {value[0]}\n📝 Status: {status}\n⭐ Today's points: {new_points}\n🏅 Total points: {total_points}\n\n"        
         elif value[1]['Last check'] == 'Your account has been suspended':
             status = '❌ Suspended'
-            message += f"{index}. {value[0]}\n📝 Status: {status}\n\n"
+            message += f"{index}. {value[0]}\n📝 Status: {status}\n"        
         elif value[1]['Last check'] == 'Your account has been locked !':
             status = '⚠️ Locked'
-            message += f"{index}. {value[0]}\n📝 Status: {status}\n\n"
+            message += f"{index}. {value[0]}\n📝 Status: {status}\n"        
         elif value[1]['Last check'] == 'Unusual activity detected !':
             status = '⚠️ Unusual activity detected'
-            message += f"{index}. {value[0]}\n📝 Status: {status}\n\n"
+            message += f"{index}. {value[0]}\n📝 Status: {status}\n"        
         elif value[1]['Last check'] == 'Unknown error !':
             status = '⛔️ Unknow error occured'
-            message += f"{index}. {value[0]}\n📝 Status: {status}\n\n"
+            message += f"{index}. {value[0]}\n📝 Status: {status}\n"        
         else:
-            status = f'Farmed on {value[1]["Last check"]}'
-            new_points = value[1]["Today's points"]
-            total_earned += new_points
-            total_points = value[1]["Points"]
-            message += f"{index}. {value[0]}\n📝 Status: {status}\n⭐️ Earned points: {new_points}\n🏅 Total points: {total_points}\n"
-            if redeem_message:
-                message += redeem_message
-            else:
-                message += "\n"
-    message += f"💵 Total earned points: {total_earned} (${total_earned/1300:0.02f}) (€{total_earned/1500:0.02f})"
+            status = '⛔️ Unknow error occured'
+            message += f"{index}. {value[0]}\n📝 Status: {status}\n"        
     return message
 
 def sendReportToMessenger(message):
-    if ARGS.discord:
-        sendToDiscord(message)
-
-def sendToDiscord(message):
-    webhook_url = ARGS.discord[0]
-    if len(message) > 2000:
-        messages = [message[i:i+2000] for i in range(0, len(message), 2000)]
-        for ms in messages:
-            content = {"username": "⭐️ Rewards Minecraft Bot ⭐️", "content": ms}
-            response = requests.post(webhook_url, json=content)
-    else:
-        content = {"username": "⭐️ Rewards Minecraft Bot ⭐️", "content": message}
-        response = requests.post(webhook_url, json=content) 
-    if response.status_code == 204:
-        prGreen("[LOGS] Report sent to Discord.\n")
-    else:
-        prRed("[ERROR] Could not send report to Discord.\n")
+    webhook = DiscordWebhook(url=ARGS.discord[0], rate_limit_retry=True, content=message)
+    response = webhook.execute()
 
 def prRed(prt):
     print(f"\033[91m{prt}\033[00m")
@@ -1433,26 +1398,26 @@ def send_email(account, type):
     if type == "withdrawal":
         if email_info[0]["withdrawal"] == "false":
             return
-        email_subject = account + " has redeemed a card in Rewards!"
+        email_subject = account + " has redeemed a card in Microsoft Rewards!"
         email_body = "Check that account's mail!"
         
     elif type == "lock":
         if email_info[0]["lock"] == "false":
             return
-        email_subject = account + " has been locked from Rewards!"
-        email_body = "Fix it by logging in through this link: https://rewards.bing.com/"
+        email_subject = account + " has been locked from Microsoft Rewards!"
+        email_body = "Fix it by logging in through this link: https://rewards.microsoft.com/"
         
     elif type == "ban":
         if email_info[0]["ban"] == "false":
                 return
-        email_subject = account + " has been shadow banned from Rewards!"
+        email_subject = account + " has been shadow banned from Microsoft Rewards!"
         email_body = "You can either close your account or try contacting support: https://support.microsoft.com/en-US"
         
     elif type == "phoneverification":
         if email_info[0]["phoneverification"] == "false":
                 return
         email_subject = account + " needs phone verification for redeeming rewards!"
-        email_body = "Fix it by manually redeeming a reward: https://rewards.bing.com/"
+        email_body = "Fix it by manually redeeming a reward: https://rewards.microsoft.com/"
     elif type == "proxyfail":
         if email_info[0]["proxyfail"] == "false":
                 return
@@ -1752,7 +1717,6 @@ def farmer():
                             '[REEDEM] Goal has not been defined for this account, defaulting to Amazon Giftcard...'
                         )
                         goal = 'Amazon'
-
                     redeem(browser, goal)
                 browser.quit()
 
@@ -1799,8 +1763,8 @@ def farmer():
         farmer()
     else:
         if ARGS.discord:
-            message = createMessage()
-            sendReportToMessenger(message)
+           message = createMessage()
+           sendReportToMessenger(message)
         FINISHED_ACCOUNTS.clear()
 
 def main():
